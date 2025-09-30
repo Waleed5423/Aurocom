@@ -1,6 +1,7 @@
 const Review = require('../models/Review');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
+const mongoose = require('mongoose');
 
 // Get reviews for a product
 const getProductReviews = async (req, res) => {
