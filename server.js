@@ -103,6 +103,7 @@ const routes = [
   { path: "/api/reviews", route: require("./routes/reviews") },
   { path: "/api/notifications", route: require("./routes/notifications") },
   { path: "/api/admin", route: require("./routes/admin") },
+  { path: "/api/upload", route: require("./routes/upload") },
 ];
 
 routes.forEach(({ path, route }) => {

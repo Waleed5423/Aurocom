@@ -4,7 +4,7 @@ const Product = require('../models/Product');
 // Get all categories
 const getCategories = async (req, res) => {
   try {
-    const { includeInactive, featured } = req.query;
+    const { includeInactive, featured , flat} = req.query;
 
     const filter = {};
     if (includeInactive !== 'true') {
@@ -30,6 +30,13 @@ const getCategories = async (req, res) => {
           subcategories: buildNestedCategories(categories, category._id)
         }));
     };
+    if (flat === 'true') {
+      // Return flat list for admin
+      const flatCategories = await Category.find(filter)
+        .populate('parent', 'name')
+        .sort({ name: 1 });
+      return res.json({ success: true, data: { categories: flatCategories } });
+    }
 
     const nestedCategories = buildNestedCategories(categories);
 
