@@ -1,9 +1,9 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
-// Create transporter
+// Create transporter - FIXED: removed the extra "r" from createTransporter
 const createTransporter = () => {
-  return nodemailer.createTransporter({
-    service: process.env.EMAIL_SERVICE,
+  return nodemailer.createTransport({
+    service: process.env.EMAIL_SERVICE || "gmail",
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
@@ -28,10 +28,10 @@ const sendEmail = async (options) => {
     }
 
     const result = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully:', result.messageId);
+    console.log("Email sent successfully:", result.messageId);
     return result;
   } catch (error) {
-    console.error('Email sending failed:', error);
+    console.error("Email sending failed:", error);
     throw error;
   }
 };
@@ -39,7 +39,7 @@ const sendEmail = async (options) => {
 // Email templates
 const emailTemplates = {
   welcome: (user) => ({
-    subject: 'Welcome to Aurocom!',
+    subject: "Welcome to Aurocom!",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Welcome to Aurocom, ${user.name}!</h2>
@@ -51,7 +51,7 @@ const emailTemplates = {
         </a>
         <p>If you have any questions, feel free to contact our support team.</p>
       </div>
-    `
+    `,
   }),
 
   orderConfirmation: (order, user) => ({
@@ -64,7 +64,9 @@ const emailTemplates = {
         <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
           <h3>Order Details</h3>
           <p><strong>Order Number:</strong> ${order.orderNumber}</p>
-          <p><strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
+          <p><strong>Order Date:</strong> ${new Date(
+            order.createdAt
+          ).toLocaleDateString()}</p>
           <p><strong>Total Amount:</strong> $${order.total.toFixed(2)}</p>
         </div>
 
@@ -72,7 +74,9 @@ const emailTemplates = {
           <h3>Shipping Address</h3>
           <p>${order.shippingAddress.name}<br>
           ${order.shippingAddress.street}<br>
-          ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zipCode}<br>
+          ${order.shippingAddress.city}, ${order.shippingAddress.state} ${
+      order.shippingAddress.zipCode
+    }<br>
           ${order.shippingAddress.country}</p>
         </div>
 
@@ -81,7 +85,7 @@ const emailTemplates = {
           View Order Details
         </a>
       </div>
-    `
+    `,
   }),
 
   orderShipped: (order, user, trackingInfo) => ({
@@ -93,26 +97,35 @@ const emailTemplates = {
         
         <div style="background: #e7f3ff; padding: 20px; border-radius: 5px; margin: 20px 0;">
           <h3>Shipping Information</h3>
-          <p><strong>Tracking Number:</strong> ${trackingInfo.trackingNumber}</p>
+          <p><strong>Tracking Number:</strong> ${
+            trackingInfo.trackingNumber
+          }</p>
           <p><strong>Carrier:</strong> ${trackingInfo.carrier}</p>
-          ${trackingInfo.estimatedDelivery ? 
-            `<p><strong>Estimated Delivery:</strong> ${trackingInfo.estimatedDelivery}</p>` : ''}
+          ${
+            trackingInfo.estimatedDelivery
+              ? `<p><strong>Estimated Delivery:</strong> ${trackingInfo.estimatedDelivery}</p>`
+              : ""
+          }
         </div>
 
-        ${trackingInfo.trackingUrl ? `
+        ${
+          trackingInfo.trackingUrl
+            ? `
           <a href="${trackingInfo.trackingUrl}" 
              style="background-color: #17a2b8; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0;">
             Track Your Package
           </a>
-        ` : ''}
+        `
+            : ""
+        }
 
         <a href="${process.env.CLIENT_URL}/orders/${order._id}" 
            style="background-color: #6c757d; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin-left: 10px;">
           View Order
         </a>
       </div>
-    `
-  })
+    `,
+  }),
 };
 
 // Send template email
@@ -123,16 +136,16 @@ const sendTemplateEmail = async (to, templateName, data) => {
   }
 
   const emailContent = template(data.user || data, data);
-  
+
   return await sendEmail({
     email: to,
     subject: emailContent.subject,
-    html: emailContent.html
+    html: emailContent.html,
   });
 };
 
 module.exports = {
   sendEmail,
   sendTemplateEmail,
-  emailTemplates
+  emailTemplates,
 };

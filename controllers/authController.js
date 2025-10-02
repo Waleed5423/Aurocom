@@ -24,15 +24,18 @@ const register = async (req, res) => {
       phone,
     });
 
-    // Generate tokens
+    // Generate email verification token
+    const verifyToken = user.getEmailVerifyToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Generate auth tokens
     const token = generateToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
 
     // Send verification email
-    const verifyToken = user.getResetPasswordToken();
-    await user.save({ validateBeforeSave: false });
-
-    const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${verifyToken}`;
+    const verifyUrl = `${
+      process.env.CLIENT_URL || "http://localhost:3000"
+    }/verify-email?token=${verifyToken}`;
 
     try {
       await sendEmail({
@@ -42,7 +45,8 @@ const register = async (req, res) => {
           <h2>Verify Your Email Address</h2>
           <p>Please click the link below to verify your email address:</p>
           <a href="${verifyUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a>
-          <p>This link will expire in 30 minutes.</p>
+          <p>This link will expire in 24 hours.</p>
+          <p>If you didn't create an account, please ignore this email.</p>
         `,
       });
     } catch (emailError) {
@@ -255,10 +259,57 @@ const refreshToken = async (req, res) => {
   }
 };
 
+const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: "Verification token is required",
+      });
+    }
+
+    const crypto = require("crypto");
+    const emailVerifyToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    const user = await User.findOne({
+      emailVerifyToken,
+      emailVerifyExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired verification token",
+      });
+    }
+
+    user.emailVerified = true;
+    user.emailVerifyToken = undefined;
+    user.emailVerifyExpire = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Email verified successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
   forgotPassword,
   resetPassword,
   refreshToken,
+  verifyEmail,
 };

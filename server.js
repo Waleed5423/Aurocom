@@ -6,7 +6,7 @@ const rateLimit = require("express-rate-limit");
 const http = require("http");
 const socketIo = require("socket.io");
 const cookieParser = require("cookie-parser");
-require("dotenv").config();
+require("dotenv").config(); 
 
 const app = express();
 const server = http.createServer(app);
@@ -123,14 +123,13 @@ app.get("/api/health", (req, res) => {
 app.use(require("./middleware/errorHandler"));
 
 // 404 handler
-app.use("*", (req, res) => {
+app.use((req, res) => {
   res.status(404).json({
     success: false,
     message: "Route not found",
     path: req.originalUrl,
   });
 });
-
 // Global error handler for unhandled rejections
 process.on("unhandledRejection", (err, promise) => {
   console.log("Unhandled Rejection at:", promise, "reason:", err);
