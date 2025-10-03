@@ -6,12 +6,12 @@ const { CloudinaryStorage } = require("multer-storage-cloudinary");
 // Cloudinary storage configuration
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: "aurocom",
-    allowed_formats: ["jpg", "jpeg", "png", "webp", "gif"],
-    transformation: [
-      { width: 1000, height: 1000, crop: "limit", quality: "auto" },
-    ],
+  params: async (req, file) => {
+    return {
+      folder: "aurocom",
+      format: file.mimetype.split("/")[1], // e.g., "jpeg", "png"
+      public_id: `aurocom_${Date.now()}_${file.originalname.split(".")[0]}`,
+    };
   },
 });
 

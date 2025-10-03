@@ -17,15 +17,15 @@ router.post("/upload", upload.single("file"), (req, res) => {
 
     console.log("✅ File uploaded successfully:", {
       originalname: req.file.originalname,
-      public_id: req.file.public_id,
-      url: req.file.url,
+      public_id: req.file.filename,
+      url: req.file.secure_url || req.file.path,
     });
 
     res.json({
       success: true,
       data: {
-        public_id: req.file.public_id,
-        url: req.file.url,
+        public_id: req.file.filename,
+        url: req.file.secure_url || req.file.path,
         format: req.file.format,
         bytes: req.file.size,
         width: req.file.width,
@@ -51,8 +51,8 @@ router.post("/upload-multiple", upload.array("files", 10), (req, res) => {
     }
 
     const data = req.files.map((file) => ({
-      public_id: file.public_id,
-      url: file.url,
+      public_id: req.file.filename,
+      url: req.file.secure_url || req.file.path,
       format: file.format,
       bytes: file.size,
       width: file.width,
