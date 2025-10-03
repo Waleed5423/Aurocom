@@ -1,25 +1,25 @@
-const multer = require('multer');
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+// middleware/upload.js
+const multer = require("multer");
+const cloudinary = require("../config/cloudinary"); // ✅ Correct import
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
 // Cloudinary storage configuration
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'aurocom',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    folder: "aurocom",
+    allowed_formats: ["jpg", "jpeg", "png", "webp", "gif"],
     transformation: [
-      { width: 1000, height: 1000, crop: 'limit', quality: 'auto' }
-    ]
+      { width: 1000, height: 1000, crop: "limit", quality: "auto" },
+    ],
   },
 });
 
 const fileFilter = (req, file, cb) => {
-  // Check file type
-  if (file.mimetype.startsWith('image/')) {
+  if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed'), false);
+    cb(new Error("Only image files are allowed"), false);
   }
 };
 
@@ -34,27 +34,27 @@ const upload = multer({
 // Error handling middleware for multer
 const handleUploadError = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {
-    if (error.code === 'LIMIT_FILE_SIZE') {
+    if (error.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({
         success: false,
-        message: 'File too large. Maximum size is 5MB.'
+        message: "File too large. Maximum size is 5MB.",
       });
     }
-    if (error.code === 'LIMIT_FILE_COUNT') {
+    if (error.code === "LIMIT_FILE_COUNT") {
       return res.status(400).json({
         success: false,
-        message: 'Too many files.'
+        message: "Too many files.",
       });
     }
   }
-  
+
   if (error) {
     return res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
-  
+
   next();
 };
 
@@ -64,7 +64,7 @@ const deleteImage = async (publicId) => {
     const result = await cloudinary.uploader.destroy(publicId);
     return result;
   } catch (error) {
-    console.error('Error deleting image from Cloudinary:', error);
+    console.error("Error deleting image from Cloudinary:", error);
     throw error;
   }
 };
@@ -72,5 +72,5 @@ const deleteImage = async (publicId) => {
 module.exports = {
   upload,
   handleUploadError,
-  deleteImage
+  deleteImage,
 };

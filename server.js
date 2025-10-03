@@ -6,7 +6,7 @@ const rateLimit = require("express-rate-limit");
 const http = require("http");
 const socketIo = require("socket.io");
 const cookieParser = require("cookie-parser");
-require("dotenv").config(); 
+require("dotenv").config();
 
 const app = express();
 const server = http.createServer(app);
@@ -148,5 +148,19 @@ server.listen(PORT, () => {
   console.log(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(
     `🔗 Client URL: ${process.env.CLIENT_URL || "http://localhost:3000"}`
+  );
+  // In server.js, after require("dotenv").config();
+  console.log("🔧 Environment Variables Check:");
+  console.log(
+    "CLOUDINARY_CLOUD_NAME:",
+    process.env.CLOUDINARY_CLOUD_NAME || "❌ NOT SET"
+  );
+  console.log(
+    "CLOUDINARY_API_KEY:",
+    process.env.CLOUDINARY_API_KEY ? "✅ Set (hidden)" : "❌ NOT SET"
+  );
+  console.log(
+    "CLOUDINARY_API_SECRET:",
+    process.env.CLOUDINARY_API_SECRET ? "✅ Set (hidden)" : "❌ NOT SET"
   );
 });
