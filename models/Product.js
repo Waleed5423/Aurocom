@@ -131,7 +131,9 @@ const productSchema = new mongoose.Schema({
     default: 0
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true },   
+  toObject: { virtuals: true }
 });
 
 // Indexes for better performance
